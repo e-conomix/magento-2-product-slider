@@ -1,5 +1,5 @@
 {
-  "name": "mageplaza/magento-2-product-slider",
+  "name": "e-conomix/mageplaza-magento-2-product-slider",
   "description": "Magento 2 Product Slider",
   "require": {
     "mageplaza/module-core": "^1.3.13"
