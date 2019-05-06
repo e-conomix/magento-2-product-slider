@@ -13,10 +13,15 @@ class RecentProducts extends \Magento\Reports\Block\Product\Viewed
 	{
 		return $this->getRecentlyViewedProducts();
 	}
-
+    
+    public function getConfigValue($config)
+    {
+        return $this->getData($config) ? $this->getData($config) : '';
+    }
 
 	public function getProductCacheKey()
-	{return 'mageplaza_product_slider_recent_products' ;
+	{
+	    return 'mageplaza_product_slider_recent_products' ;
 	}
 
 }
