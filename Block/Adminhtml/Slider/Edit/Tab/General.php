@@ -21,19 +21,24 @@
 
 namespace Mageplaza\Productslider\Block\Adminhtml\Slider\Edit\Tab;
 
+use Magento\Backend\Block\Store\Switcher\Form\Renderer\Fieldset\Element;
 use Magento\Backend\Block\Template\Context;
+use Magento\Backend\Block\Widget\Form\Element\Dependence;
 use Magento\Backend\Block\Widget\Form\Generic;
 use Magento\Backend\Block\Widget\Tab\TabInterface;
 use Magento\Customer\Api\GroupRepositoryInterface;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Convert\DataObject;
+use Magento\Framework\Data\Form\Element\Renderer\RendererInterface;
 use Magento\Framework\Data\FormFactory;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Registry;
-use Magento\Framework\Stdlib\DateTime;
 use Magento\Store\Model\System\Store;
+use Mageplaza\Productslider\Block\Adminhtml\Slider\Edit\Tab\Renderer\Category;
 use Mageplaza\Productslider\Model\Config\Source\Location;
 use Mageplaza\Productslider\Model\Config\Source\ProductType;
 use Mageplaza\Productslider\Model\ResourceModel\SliderFactory;
+use Mageplaza\Productslider\Model\Slider;
 
 /**
  * Class General
@@ -42,32 +47,32 @@ use Mageplaza\Productslider\Model\ResourceModel\SliderFactory;
 class General extends Generic implements TabInterface
 {
     /**
-     * @var \Magento\Store\Model\System\Store
+     * @var Store
      */
     protected $_systemStore;
 
     /**
-     * @var \Mageplaza\Productslider\Model\ResourceModel\SliderFactory
+     * @var SliderFactory
      */
     protected $_resourceModelSliderFactory;
 
     /**
-     * @var \Magento\Customer\Api\GroupRepositoryInterface
+     * @var GroupRepositoryInterface
      */
     protected $_groupRepository;
 
     /**
-     * @var \Magento\Framework\Api\SearchCriteriaBuilder
+     * @var SearchCriteriaBuilder
      */
     protected $_searchCriteriaBuilder;
 
     /**
-     * @var \Magento\Framework\Convert\DataObject
+     * @var DataObject
      */
     protected $_objectConverter;
 
     /**
-     * @var \Mageplaza\Productslider\Model\Config\Source\Location
+     * @var Location
      */
     protected $_location;
 
@@ -78,6 +83,7 @@ class General extends Generic implements TabInterface
 
     /**
      * General constructor.
+     *
      * @param SliderFactory $resourceModelSliderFactory
      * @param GroupRepositoryInterface $groupRepository
      * @param SearchCriteriaBuilder $searchCriteriaBuilder
@@ -102,8 +108,7 @@ class General extends Generic implements TabInterface
         Store $systemStore,
         ProductType $productType,
         array $data = []
-    )
-    {
+    ) {
         $this->_resourceModelSliderFactory = $resourceModelSliderFactory;
         $this->_groupRepository            = $groupRepository;
         $this->_searchCriteriaBuilder      = $searchCriteriaBuilder;
@@ -116,12 +121,12 @@ class General extends Generic implements TabInterface
     }
 
     /**
-     * @return \Magento\Backend\Block\Widget\Form\Generic
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @return Generic
+     * @throws LocalizedException
      */
     protected function _prepareForm()
     {
-        /** @var \Mageplaza\Productslider\Model\Slider $slider */
+        /** @var Slider $slider */
         $slider = $this->_coreRegistry->registry('mageplaza_productslider_slider');
 
         $form = $this->_formFactory->create();
@@ -138,6 +143,7 @@ class General extends Generic implements TabInterface
             'title'    => __('Name'),
             'required' => true,
         ]);
+
         $fieldset->addField('status', 'select', [
             'name'     => 'status',
             'label'    => __('Status'),
@@ -166,16 +172,15 @@ class General extends Generic implements TabInterface
             'values' => $this->_productType->toOptionArray()
         ]);
 
-        $categoryIds = $fieldset->addField('categories_ids', '\Mageplaza\Productslider\Block\Adminhtml\Slider\Edit\Tab\Renderer\Category', [
-                'name'  => 'categories_ids',
-                'label' => __('Categories'),
-                'title' => __('Categories')
-            ]
-        );
+        $categoryIds = $fieldset->addField('categories_ids', Category::class, [
+            'name'  => 'categories_ids',
+            'label' => __('Categories'),
+            'title' => __('Categories')
+        ]);
 
         if (!$this->_storeManager->isSingleStoreMode()) {
-            /** @var \Magento\Framework\Data\Form\Element\Renderer\RendererInterface $rendererBlock */
-            $rendererBlock = $this->getLayout()->createBlock('Magento\Backend\Block\Store\Switcher\Form\Renderer\Fieldset\Element');
+            /** @var RendererInterface $rendererBlock */
+            $rendererBlock = $this->getLayout()->createBlock(Element::class);
             $fieldset->addField('store_ids', 'multiselect', [
                 'name'     => 'store_ids',
                 'label'    => __('Store Views'),
@@ -192,42 +197,41 @@ class General extends Generic implements TabInterface
 
         $customerGroups = $this->_groupRepository->getList($this->_searchCriteriaBuilder->create())->getItems();
         $fieldset->addField('customer_group_ids', 'multiselect', [
-                'name'     => 'customer_group_ids[]',
-                'label'    => __('Customer Groups'),
-                'title'    => __('Customer Groups'),
-                'required' => true,
-                'values'   => $this->_objectConverter->toOptionArray($customerGroups, 'id', 'code'),
-                'note'     => __('Select customer group(s) to display the block to')
-            ]
-        );
+            'name'     => 'customer_group_ids[]',
+            'label'    => __('Customer Groups'),
+            'title'    => __('Customer Groups'),
+            'required' => true,
+            'values'   => $this->_objectConverter->toOptionArray($customerGroups, 'id', 'code'),
+            'note'     => __('Select customer group(s) to display the block to')
+        ]);
 
         $fieldset->addField('time_cache', 'text', [
-                'name'  => 'time_cache',
-                'label' => __('Cache Lifetime'),
-                'title' => __('Cache Lifetime'),
-                'note'  => __('seconds. 86400 by default, if not set. To refresh instantly, clear the Blocks HTML Output cache.')
-            ]
-        );
-        $dateFormat = $this->_localeDate->getDateFormat(\IntlDateFormatter::SHORT);
-        $fieldset->addField('from_date', 'date', [
-                'name'         => 'from_date',
-                'label'        => __('From Date'),
-                'title'        => __('From'),
-                'input_format' => DateTime::DATE_INTERNAL_FORMAT,
-                'date_format'  => $dateFormat
-            ]
-        );
-        $fieldset->addField('to_date', 'date', [
-                'name'         => 'to_date',
-                'label'        => __('To Date'),
-                'title'        => __('To'),
-                'input_format' => DateTime::DATE_INTERNAL_FORMAT,
-                'date_format'  => $dateFormat
-            ]
-        );
+            'name'  => 'time_cache',
+            'label' => __('Cache Lifetime'),
+            'title' => __('Cache Lifetime'),
+            'class' => 'validate-digits',
+            'note'  => __('seconds. 86400 by default, if not set. To refresh instantly, clear the Blocks HTML Output cache.')
+        ]);
 
-        $this->setChild('form_after',
-            $this->getLayout()->createBlock('Magento\Backend\Block\Widget\Form\Element\Dependence')
+        $fieldset->addField('from_date', 'date', [
+            'name'        => 'from_date',
+            'label'       => __('From Date'),
+            'title'       => __('From'),
+            'date_format' => 'M/d/yyyy',
+            'timezone'    => false
+        ]);
+
+        $fieldset->addField('to_date', 'date', [
+            'name'        => 'to_date',
+            'label'       => __('To Date'),
+            'title'       => __('To'),
+            'date_format' => 'M/d/yyyy',
+            'timezone'    => false
+        ]);
+
+        $this->setChild(
+            'form_after',
+            $this->getLayout()->createBlock(Dependence::class)
                 ->addFieldMap($productType->getHtmlId(), $productType->getName())
                 ->addFieldMap($categoryIds->getHtmlId(), $categoryIds->getName())
                 ->addFieldDependence($categoryIds->getName(), $productType->getName(), ProductType::CATEGORY)

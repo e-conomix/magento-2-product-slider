@@ -36,7 +36,7 @@ use Mageplaza\Productslider\Helper\Data;
 class CategoryId extends AbstractSlider
 {
     /**
-     * @var \Magento\Catalog\Model\CategoryFactory
+     * @var CategoryFactory
      */
     protected $_categoryFactory;
 
@@ -60,8 +60,7 @@ class CategoryId extends AbstractSlider
         HttpContext $httpContext,
         CategoryFactory $categoryFactory,
         array $data = []
-    )
-    {
+    ) {
         $this->_categoryFactory = $categoryFactory;
 
         parent::__construct($context, $productCollectionFactory, $catalogProductVisibility, $dateTime, $helperData, $httpContext, $data);
@@ -77,7 +76,8 @@ class CategoryId extends AbstractSlider
         $productIds = $this->getProductIdsByCategory();
         $collection = [];
         if (!empty($productIds)) {
-            $collection = $this->_productCollectionFactory->create()->addIdFilter($productIds)->setPageSize($this->getProductsCount());;
+            $collection = $this->_productCollectionFactory->create()->addIdFilter($productIds)->setPageSize($this->getProductsCount());
+            ;
             $this->_addProductAttributesAndPrices($collection);
         }
 
@@ -92,16 +92,20 @@ class CategoryId extends AbstractSlider
     public function getProductIdsByCategory()
     {
         $productIds = [];
-        $catIds     = $this->getSliderCategoryIds();
-        foreach ($catIds as $catId) {
-            $category   = $this->_categoryFactory->create()->load($catId);
-            $collection = $this->_productCollectionFactory->create()
-                ->addAttributeToSelect('*')
-                ->addCategoryFilter($category);
-
-            foreach ($collection as $item) {
-                $productIds[] = $item->getData('entity_id');
+        $catIds = $this->getSliderCategoryIds();
+        $collection = $this->_productCollectionFactory->create();
+        if (is_array($catIds)) {
+            foreach ($catIds as $catId) {
+                $category = $this->_categoryFactory->create()->load($catId);
+                $collection->addAttributeToSelect('*')->addCategoryFilter($category);
             }
+        } else {
+            $category = $this->_categoryFactory->create()->load($catIds);
+            $collection->addAttributeToSelect('*')->addCategoryFilter($category);
+        }
+
+        foreach ($collection as $item) {
+            $productIds[] = $item->getData('entity_id');
         }
 
         return $productIds;

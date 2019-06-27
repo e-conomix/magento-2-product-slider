@@ -21,11 +21,14 @@
 
 namespace Mageplaza\Productslider\Block;
 
+use Exception;
 use Magento\Catalog\Block\Product\AbstractProduct;
 use Magento\Catalog\Block\Product\Context;
+use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Visibility;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Magento\Framework\App\Http\Context as HttpContext;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Mageplaza\Productslider\Helper\Data;
 use Mageplaza\Productslider\Model\Config\Source\Additional;
@@ -37,12 +40,12 @@ use Mageplaza\Productslider\Model\Config\Source\Additional;
 abstract class AbstractSlider extends AbstractProduct
 {
     /**
-     * @var \Magento\Framework\Stdlib\DateTime\DateTime
+     * @var DateTime
      */
     protected $_date;
 
     /**
-     * @var \Mageplaza\Productslider\Helper\Data
+     * @var Data
      */
     protected $_helperData;
 
@@ -79,13 +82,12 @@ abstract class AbstractSlider extends AbstractProduct
         Data $helperData,
         HttpContext $httpContext,
         array $data = []
-    )
-    {
+    ) {
         $this->_productCollectionFactory = $productCollectionFactory;
         $this->_catalogProductVisibility = $catalogProductVisibility;
-        $this->_date                     = $dateTime;
-        $this->_helperData               = $helperData;
-        $this->httpContext               = $httpContext;
+        $this->_date = $dateTime;
+        $this->_helperData = $helperData;
+        $this->httpContext = $httpContext;
 
         parent::__construct($context, $data);
     }
@@ -99,7 +101,7 @@ abstract class AbstractSlider extends AbstractProduct
 
         $this->addData([
             'cache_lifetime' => $this->getSlider() ? $this->getSlider()->getTimeCache() : 86400,
-            'cache_tags'     => [\Magento\Catalog\Model\Product::CACHE_TAG]
+            'cache_tags'     => [Product::CACHE_TAG]
         ]);
 
         $this->setTemplate('Mageplaza_Productslider::productslider.phtml');
@@ -114,6 +116,7 @@ abstract class AbstractSlider extends AbstractProduct
      * Get Key pieces for caching block content
      *
      * @return array
+     * @throws NoSuchEntityException
      */
     public function getCacheKeyInfo()
     {
@@ -126,11 +129,16 @@ abstract class AbstractSlider extends AbstractProduct
     }
 
     /**
-     * @return mixed
+     * @return array|mixed
      */
     public function getDisplayAdditional()
     {
-        $display = $this->getSlider()->getDisplayAdditional();
+        if ($this->getSlider()) {
+            $display = $this->getSlider()->getDisplayAdditional();
+        } else {
+            $display = $this->_helperData->getModuleConfig('general/display_information');
+        }
+
         if (!is_array($display)) {
             $display = explode(',', $display);
         }
@@ -143,7 +151,7 @@ abstract class AbstractSlider extends AbstractProduct
      */
     public function canShowPrice()
     {
-        return in_array(Additional::SHOW_PRICE, $this->getDisplayAdditional());
+        return in_array(Additional::SHOW_PRICE, $this->getDisplayAdditional(), true);
     }
 
     /**
@@ -151,7 +159,7 @@ abstract class AbstractSlider extends AbstractProduct
      */
     public function canShowReview()
     {
-        return in_array(Additional::SHOW_REVIEW, $this->getDisplayAdditional());
+        return in_array(Additional::SHOW_REVIEW, $this->getDisplayAdditional(), true);
     }
 
     /**
@@ -159,7 +167,7 @@ abstract class AbstractSlider extends AbstractProduct
      */
     public function canShowAddToCart()
     {
-        return in_array(Additional::SHOW_CART, $this->getDisplayAdditional());
+        return in_array(Additional::SHOW_CART, $this->getDisplayAdditional(), true);
     }
 
     /**
@@ -183,7 +191,7 @@ abstract class AbstractSlider extends AbstractProduct
     public function getTitle()
     {
         if ($title = $this->hasData('title')) {
-            return $title;
+            return $this->getData('title');
         }
 
         if ($this->getSlider()) {
@@ -217,13 +225,17 @@ abstract class AbstractSlider extends AbstractProduct
     public function getAllOptions()
     {
         $sliderOptions = '';
-        $allConfig     = $this->_helperData->getModuleConfig('slider_design');
+        $allConfig = $this->_helperData->getModuleConfig('slider_design');
 
         foreach ($allConfig as $key => $value) {
-            if ($key == 'item_slider') {
-                $sliderOptions = $sliderOptions . $this->getResponsiveConfig();
-            } else if ($key != 'responsive') {
-                if(in_array($key, ['loop', 'nav', 'dots', 'lazyLoad', 'autoplay', 'autoplayHoverPause'])){
+            if ($key === 'item_slider') {
+                if (empty($this->getSlider())) {
+                    $sliderOptions .= $this->_helperData->getResponseValue();
+                } else {
+                    $sliderOptions .= $this->getResponsiveConfig();
+                }
+            } elseif ($key !== 'responsive') {
+                if (in_array($key, ['loop', 'nav', 'dots', 'lazyLoad', 'autoplay', 'autoplayHoverPause'])) {
                     $value = $value ? 'true' : 'false';
                 }
                 $sliderOptions = $sliderOptions . $key . ':' . $value . ',';
@@ -241,12 +253,12 @@ abstract class AbstractSlider extends AbstractProduct
         $slider = $this->getSlider();
         if ($slider && $slider->getIsResponsive()) {
             try {
-                if ($slider->getIsResponsive() == 2) {
-                    return $responsiveConfig = $this->_helperData->getResponseValue();
+                if ($slider->getIsResponsive() === '2') {
+                    return $this->_helperData->getResponseValue();
                 } else {
                     $responsiveConfig = $slider->getResponsiveItems() ? $this->_helperData->unserialize($slider->getResponsiveItems()) : [];
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $responsiveConfig = [];
             }
 

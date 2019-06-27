@@ -1,17 +1,17 @@
-# Magento 2 Product Slider by Mageplaza
+# The #1 Product Slider for Magento 2
 
 
 ## How does it work?
 
 When you enable **Magento 2 Product Slider** module and create the product sliders in the configuration, lists of your products will slide out in the lively and attractive way on the storefront with the animation effects you have chosen before. Along with product image, your clients can also see the price information, rating for the product and even Add to Cart button to proceed to the checkout whenever they need.
 
-[![Latest Stable Version](https://poser.pugx.org/mageplaza/magento-2-product-slider/v/stable)](https://packagist.org/packages/mageplaza/mageplaza/magento-2-product-slider)
+[![Latest Stable Version](https://poser.pugx.org/mageplaza/magento-2-product-slider/v/stable)](https://packagist.org/packages/mageplaza/magento-2-product-slider)
 [![Total Downloads](https://poser.pugx.org/mageplaza/magento-2-product-slider/downloads)](https://packagist.org/packages/mageplaza/magento-2-product-slider)
 
 
 ![magento 2 product slider](https://www.mageplaza.com/assets/img/extensions-images/magento-2-product-slider/product-slider-effect.gif)
 
-## Documentations
+## Product Slider Documentations
 
 - [Installation guide](https://www.mageplaza.com/install-magento-2-extension/)
 - [User Guide](https://docs.mageplaza.com/product-slider-m2/)
@@ -22,7 +22,7 @@ When you enable **Magento 2 Product Slider** module and create the product slide
 - [Changelog](https://github.com/mageplaza/magento-2-product-slider/releases)
 - [License](https://www.mageplaza.com/LICENSE.txt)
 
-## How to install
+## How to install Magento 2 Product Slider
 
 ### 1. via composer
 
@@ -118,4 +118,31 @@ Along with the performance of the slider, you can make individual product elemen
 - Fully compatible with Mageplaza extensions
 - Supports multiple stores.
 - Supports multiple languages.
+
+**Peoples also search:**
+- magento 2 featured products
+- product slider magento 2
+- featured products magento 2
+- magento 2 product carousel
+- magento 2 best seller products
+- magento 2 featured products on homepage
+- best seller products magento 2 extension
+- magento 2 best seller widget
+- magento 2 most popular products
+- magento 2 most viewed products collection
+- magento 2 recently viewed products
+- recently viewed products magento 2
+- magento-2 product slider code
+- magento 2 get best seller product collection
+- magento 2 get recently viewed products collection
+
+**Other free extension on Github**
+- [Magento 2 SEO extension](https://github.com/mageplaza/magento-2-seo)
+- [Magento 2 GDPR](https://github.com/mageplaza/magento-2-gdpr)
+- [Magento 2 popup extension](https://github.com/mageplaza/magento-2-better-popup)
+- [Magento 2 Reports extension](https://github.com/mageplaza/magento-2-reports)
+- [Magento 2 social login](https://github.com/mageplaza/magento-2-social-login)
+- [Magento 2 blog](https://github.com/mageplaza/magento-2-blog)
+- [Magento 2 Layered Navigation](https://github.com/mageplaza/magento-2-ajax-layered-navigation)
+- [Magento 2 security extension](https://github.com/mageplaza/magento-2-security)
 
