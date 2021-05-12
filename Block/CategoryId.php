@@ -41,7 +41,11 @@ class CategoryId extends \Mageplaza\Productslider\Block\AbstractSlider
 
 	public function getProductCacheKey()
 	{
-		return 'mageplaza_product_slider_category_' . $this->getData('category_id');
+		return implode('_', [
+			'mageplaza_product_slider_category',
+			$this->getData('category_id'),
+			'store',
+			$this->_storeManager->getStore()->getId()
+		]);
 	}
-
 }
